@@ -242,6 +242,12 @@ function genStoryExport(ast: t.JSXElement, context: Context) {
     statements.push(`${storyKey}.render = ${renderCode};`);
   }
 
+  const scopes = expressionOrNull(getAttr(ast.openingElement, 'scopes'));
+  if (scopes) {
+    const { code: scopesCode } = generate(scopes, {});
+    statements.push(`${storyKey}.scopes = ${scopesCode};`);
+  }
+
   context.storyNameToKey[storyName] = storyKey;
 
   return {
@@ -297,6 +303,7 @@ function genMeta(ast: t.JSXElement, options: CompilerOptions) {
   const id = t.isStringLiteral(idAttr) ? `'${idAttr.value}'` : null;
   const parameters = genAttribute('parameters', ast.openingElement);
   const decorators = genAttribute('decorators', ast.openingElement);
+  const scopes = genAttribute('scopes', ast.openingElement);
   const loaders = genAttribute('loaders', ast.openingElement);
   const component = genAttribute('component', ast.openingElement);
   const subcomponents = genAttribute('subcomponents', ast.openingElement);
@@ -309,6 +316,7 @@ function genMeta(ast: t.JSXElement, options: CompilerOptions) {
     id,
     parameters,
     decorators,
+    scopes,
     loaders,
     component,
     subcomponents,

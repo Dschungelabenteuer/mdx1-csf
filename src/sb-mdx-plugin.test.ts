@@ -80,12 +80,12 @@ describe('docs-mdx-compiler-plugin', () => {
       clean(dedent`
         import { Button } from '@storybook/react/demo';
         import { Story, Meta } from '@storybook/addon-docs';
-        
+
         <Meta title="Button" component={Button} id="button-id" />
-        
+
         <Story name="component notes">
           <Button>Component notes</Button>
-        </Story>        
+        </Story>
       `)
     ).toMatchInlineSnapshot(`
       export const componentNotes = () => <Button>Component notes</Button>;
@@ -110,18 +110,18 @@ describe('docs-mdx-compiler-plugin', () => {
         import { Welcome, Button } from '@storybook/angular/demo';
         import * as MyStories from './My.stories';
         import { Other } from './Other.stories';
-        
+
         <Meta title="MDX/CSF imports" />
-        
+
         # Stories from CSF imports
-        
+
         <Story story={MyStories.Basic} />
-        
+
         <Canvas>
           <Story story={Other} />
         </Canvas>
-        
-        <Story name="renamed" story={MyStories.Foo} />      
+
+        <Story name="renamed" story={MyStories.Foo} />
       `)
     ).toMatchInlineSnapshot(`
       export const _Basic_ = MyStories.Basic;
@@ -340,6 +340,35 @@ describe('docs-mdx-compiler-plugin', () => {
     `);
   });
 
+  it('scopes.mdx', () => {
+    expect(
+      clean(dedent`
+        import { Button } from '@storybook/react/demo';
+        import { Story, Meta } from '@storybook/addon-docs';
+
+        <Meta title="Button" component={Button} scopes={['scope-a', 'scope-b']} />
+
+        <Story name="story notes" scopes={['scope-a']}>
+          <Button>Story notes</Button>
+        </Story>
+      `)
+    ).toMatchInlineSnapshot(`
+      export const storyNotes = () => <Button>Story notes</Button>;
+      storyNotes.storyName = 'story notes';
+      storyNotes.parameters = { storySource: { source: '<Button>Story notes</Button>' } };
+      storyNotes.scopes = ['scope-a'];
+
+      const componentMeta = {
+        title: 'Button',
+        scopes: ['scope-a', 'scope-b'],
+        component: Button,
+        includeStories: ['storyNotes'],
+      };
+
+      const mdxStoryNameToKey = { 'story notes': 'storyNotes' };
+    `);
+  });
+
   it('previews.mdx', () => {
     expect(
       clean(dedent`
@@ -477,23 +506,23 @@ describe('docs-mdx-compiler-plugin', () => {
       clean(dedent`
         import { Button } from '@storybook/react/demo';
         import { Story, Meta } from '@storybook/addon-docs';
-        
+
         <Meta title="Button" />
-        
+
         # Story definition
-        
+
         <Story name="one">
           <Button>One</Button>
         </Story>
-        
+
         <Story name="hello story">
           <Button>Hello button</Button>
         </Story>
-        
+
         <Story name="w/punctuation">
           <Button>with punctuation</Button>
         </Story>
-        
+
         <Story name="1 fine day">
           <Button>starts with number</Button>
         </Story>
@@ -535,14 +564,14 @@ describe('docs-mdx-compiler-plugin', () => {
         import { Meta, Story } from '@storybook/addon-docs';
 
         <Meta title="story-function-var" />
-        
+
         export const basicFn = () => <Button />;
-        
+
         # Button
-        
+
         I can define a story with the function defined in CSF:
-        
-        <Story name="basic">{basicFn}</Story>      
+
+        <Story name="basic">{basicFn}</Story>
       `)
     ).toMatchInlineSnapshot(`
       export const basic = assertIsFn(basicFn);
@@ -594,9 +623,9 @@ describe('docs-mdx-compiler-plugin', () => {
         import { Story, Meta } from '@storybook/addon-docs';
 
         <Meta title="Multiple" />
-        
+
         # Multiple children
-        
+
         <Story name="multiple children">
           <p>Hello Child #1</p>
           <p>Hello Child #2</p>
@@ -626,11 +655,11 @@ describe('docs-mdx-compiler-plugin', () => {
         import { Story, Meta } from '@storybook/addon-docs';
         import { Welcome, Button } from '@storybook/angular/demo';
         import { linkTo } from '@storybook/addon-links';
-        
+
         <Meta title="MDX|Welcome" />
-        
+
         # Story object
-        
+
         <Story name="to storybook" height="300px">
           {{
             template: '<storybook-welcome-component (showApp)="showApp()"></storybook-welcome-component>',
@@ -737,7 +766,7 @@ describe('docs-mdx-compiler-plugin', () => {
 
         <Story>
           <Button>One</Button>
-        </Story>      
+        </Story>
       `)
     ).rejects.toThrow('Expected a Story name, id, or story attribute');
   });
